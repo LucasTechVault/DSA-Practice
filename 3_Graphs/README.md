@@ -56,6 +56,74 @@ for r in range(rows):
                 perimeter -= 2
 ```
 
+### 2. Flood Fill
+
+**Problem:**
+You are given an image represented by an `m x n` grid of integers image, where `image[i][j]` represents the pixel value of the image. You are also given three integers `sr, sc, and color`. Your task is to perform a flood fill on the image starting from the pixel `image[sr][sc]`.
+
+To perform a flood fill:
+
+Begin with the starting pixel and change its color to color.
+Perform the same process for each pixel that is directly adjacent (pixels that share a side with the original pixel, either horizontally or vertically) and shares the same color as the starting pixel.
+Keep repeating this process by checking neighboring pixels of the updated pixels and `modifying their color` if it matches the original color of the starting pixel.
+The process stops when there are no more adjacent pixels of the original color to update.
+Return the modified image after performing the flood fill.
+
+**Strategy**:
+
+```
+1. check if image[sr][sc] == color
+    - no change needed, return image
+    - else to change color = image[sr][sc]
+
+2. Perform BFS from image[sr][sc]
+    - init deque([(sr, sc)])
+    - init directions array
+    - find nr, nc
+    - perform boundary check + color check
+    - if img[nr][nc] == to change color
+        - img[nr][nc] = color
+        - append ((nr, nc)) to queue
+```
+
+**Code:**
+
+```
+    def floodFill(self, image: List[List[int]], sr: int, sc: int, color: int) -> List[List[int]]:
+        reference_color = image[sr][sc]
+
+        # No change needed
+        if reference_color == color:
+            return image
+
+        rows, cols = len(image), len(image[0])
+
+        # init & change color immediately
+        queue = deque([(sr, sc)])
+        image[sr][sc] = color
+
+        directions = [
+            (1, 0), (-1, 0),
+            (0, 1), (0 , -1)
+        ]
+
+        while queue:
+            r, c = queue.popleft()
+            for dr, dc in directions:
+                nr, nc = r + dr, c + dc
+
+                if (
+                    nr >= 0 and nr < rows and
+                    nc >= 0 and nc < cols and
+                    image[nr][nc] == reference_color
+                ):
+                    image[nr][nc] = color
+                    queue.append((nr, nc))
+
+        return image
+
+```
+
 ---
 
 ## Directed Graph / Degree Counting Pattern
@@ -85,7 +153,7 @@ Return the label of the town judge if the town judge exists and can be identifie
 - += 1 if receive trust, -=1 if send trust
 ```
 
-**Code Solution:**
+**Code:**
 
 ```
 # O(E) Time | O(N) Space
