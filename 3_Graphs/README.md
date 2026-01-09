@@ -69,6 +69,15 @@ Keep repeating this process by checking neighboring pixels of the updated pixels
 The process stops when there are no more adjacent pixels of the original color to update.
 Return the modified image after performing the flood fill.
 
+**Example:**
+
+```
+Input: image = [[1,1,1],[1,1,0],[1,0,1]]
+sr = 1, sc = 1, color = 2
+
+Output: [[2,2,2],[2,2,0],[2,0,1]]
+```
+
 **Strategy**:
 
 ```
@@ -122,6 +131,220 @@ Return the modified image after performing the flood fill.
 
         return image
 
+```
+
+### 3. Count Servers that communicate
+
+**Problem:**
+You are given a map of a server center, represented as a `m * n` integer matrix grid, where 1 means that on that cell there is a server and 0 means that it is no server. Two servers are said to communicate if they are on the same row or on the same column.
+
+Return the number of servers that communicate with any other server.
+
+**Example:**
+
+```
+Input: grid = [
+    [1,1,0,0],
+    [0,0,1,0],
+    [0,0,1,0],
+    [0,0,0,1]
+]
+
+Output: 4
+```
+
+**Strategy:**
+
+```
+Main Idea -> track num systems in rows & cols
+- init row_census arr [0] * rows
+- init col_census arr [0] * cols
+
+1st loop -> populate census arrays
+2nd loop -> comm_device += 1 if:
+    - row_census[r] > 1 or col_census[c] > 1
+```
+
+**Code:**
+
+```
+    def countServers(self, grid: List[List[int]]) -> int:
+        rows, cols = len(grid), len(grid[0])
+
+        # Init Census array
+        row_counts = [0] * rows
+        col_counts = [0] * cols
+
+        # First pass to track num systems per row & col
+        for r in range(rows):
+            for c in range(cols):
+                if grid[r][c] == 1:
+                    row_counts[r] += 1
+                    col_counts[c] += 1
+
+        communicating_device = 0
+
+        # Second pass to see if device is communicating
+        for r in range(rows):
+            for c in range(cols):
+                if grid[r][c] == 1 and (row_counts[r] > 1 or col_counts[c] > 1):
+                    communicating_device += 1
+
+        return communicating_device
+```
+
+### 4. Number of Islands
+
+**Problem:**
+Given a 2D grid `grid` where '1' represents land and '0' represents water, count and return the number of islands.
+
+An island is formed by connecting adjacent lands horizontally or vertically and is surrounded by water. You may assume water is surrounding the grid (i.e., all the edges are water).
+
+**Example:**
+
+```
+Input: grid = [
+    ["0","1","1","1","0"],
+    ["0","1","0","1","0"],
+    ["1","1","0","0","0"],
+    ["0","0","0","0","0"]
+  ]
+Output: 1
+```
+
+**Strategy:**
+
+```
+- define a sink_island(sr, sc) that performs bfs
+    - init directions arr (outside fn)
+    - cur_island = deque([(sr, sc)])
+    - while cur_island, popleft()
+        - boundary + land check
+        - if valid
+            - set value to 0 (sink)
+            - add (nr, nc) to queue
+- declare satellite loop
+    - if land cell:
+        - increment count
+        - execute sink_island(r, c)
+- return count
+```
+
+**Code:**
+
+```
+ def numIslands(self, grid: List[List[str]]) -> int:
+        rows, cols = len(grid), len(grid[0])
+        directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+
+        def sink_island(sr, sc):
+            grid[sr][sc] = '0'
+            q = deque([(sr, sc)])
+
+            while q:
+                r, c = q.popleft()
+                for dr, dc in directions:
+                    nr, nc = r + dr, c + dc
+
+                    if (
+                        nr >= 0 and nr < rows and
+                        nc >= 0 and nc < cols and
+                        grid[nr][nc] == '1'
+                    ):
+                        grid[nr][nc] = '0'
+                        q.append((nr, nc))
+
+        num_islands = 0
+        for r in range(rows):
+            for c in range(cols):
+                if grid[r][c] == '1':
+                    num_islands += 1
+                    sink_island(r, c)
+
+        return num_islands
+```
+
+### 5. Max Size of Island
+
+**Problem:**
+You are given a matrix grid where `grid[i]` is either a 0 (representing water) or 1 (representing land).
+
+An island is defined as a group of 1's connected horizontally or vertically. You may assume all four edges of the grid are surrounded by water.
+
+The area of an island is defined as the number of cells within the island.
+
+Return the maximum area of an island in grid. If no island exists, return 0.
+
+**Example:**
+
+```
+Input: grid = [
+  [0,1,1,0,1],
+  [1,0,1,0,1],
+  [0,1,1,0,1],
+  [0,1,0,0,1]
+]
+
+Output: 6
+
+```
+
+**Strategy:**
+
+```
+- Same idea as Num Islands
+- init a sink_island(r, c)
+    - grid[r][c] = 0 # sink
+    - count += 1
+    - return count
+- init max_size_so_far = 0
+- satellite loop:
+    - count = sink_island(r, c)
+    - max_size_so_far = max(max_size_so_far, count)
+```
+
+**Code:**
+
+```
+    def maxAreaOfIsland(self, grid: List[List[int]]) -> int:
+        rows, cols = len(grid), len(grid[0])
+
+        directions = [
+            (1, 0), (-1, 0),
+            (0, 1), (0, -1)
+        ]
+
+        def sink_and_get_size(sr, sc):
+            grid[sr][sc] = 0
+            cur_island_size = 1
+
+            q = deque([(sr, sc)])
+
+            while q:
+                r, c = q.popleft()
+                for dr, dc in directions:
+                    nr, nc = r + dr, c + dc
+
+                    if (
+                        nr >= 0 and nr < rows and
+                        nc >= 0 and nc < cols and
+                        grid[nr][nc] == 1
+                    ):
+                        grid[nr][nc] = 0
+                        cur_island_size += 1
+
+                        q.append((nr, nc))
+
+            return cur_island_size
+
+        largest_island_size = 0
+        for r in range(rows):
+            for c in range(cols):
+                if grid[r][c] == 1:
+                    size = sink_and_get_size(r, c)
+                    largest_island_size = max(largest_island_size, size)
+
+        return largest_island_size
 ```
 
 ---
