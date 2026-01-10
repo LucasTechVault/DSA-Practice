@@ -301,6 +301,172 @@ def rob(self, nums: List[int]) -> int:
 
 ## E. Interval DP (combining)
 
+```
+1. To solve for [i, j], must first solve smaller interval
+2. dp[i][j] depends on:
+    - dp[i+1][j-1] (shrinking from both sides)
+    - dp[i][k] + dp[k+1][j] (split interval)
+3. Cannot iterate for i in range(n)
+    - must iterate by length (size 1, size 2 etc..)
+```
+
+### 1. Longest Palindromic Substring
+
+**Problem:**
+Given a string `s`, return the longest substring of `s` that is a palindrome.
+
+A palindrome is a string that reads the same forward and backward.
+
+If there are multiple palindromic substrings that have the same length, **return any one of them.**
+
+**Example:**
+
+```
+Input: s = "ababd"
+Output: "bab"
+```
+
+**Intuition:**
+
+```
+1. Initialize a 2D grid dp [[False] * n for _ in range(n)]
+    * only need to focus on upper triangular portion
+     a     b     a     b     a
+  a  False False False False False
+  b        False False False False
+  a              False False False
+  b                    False False
+  a                          False
+
+2. Palindrome is just a smaller palindrome within
+3. Diagonal 0 (Len 1) ('a', 'b', 'c') = True
+    - (0,0) (1,1) (2,2) (3,3)
+- Diagonal 1 (len 2) ("ab", "ba", "ab", "bd")
+    - (0, 1), (1, 2), (2, 3), (3, 4)
+- Diagonal 2 (len 3) ("aba", "bab", "abd")
+    - (0, 2), (1, 3), (2, 4)
+- Diagonal 3 (len 4) ("abab", "babd")
+    - (0, 3), (1, 4)
+- Diagonal 4 (len 5) ( "ababd")
+
+To find len 5 -> we must "look back"
+    - dp[i+1][j-1]
+    e.g. len 5 -> i = 0, j = 4
+        - i + 1 = 1
+        - j - 1 = 3
+        - dp[1][3] = "bab" <- inner string
+        - dp[0][4] = "a bab a" <- original
+    - To find len 3 "bab", we must "look back"
+        - i + 1 = 2
+        - j - 1 = 2
+        - dp[2][2] = 'a'<- inner string (base case)
+        - dp[1][3] = "bab" <- original
+```
+
+**Code:**
+
+```
+def longestPalindrome(self, s: str) -> str:
+    n = len(s)
+    if n == 1:
+        return s
+
+    max_len_so_far = 1 # default, single char is palindrome
+    start_idx_of_palindrome = 0
+
+    # 1. Init dp table
+    dp = [[False] * n for _ in range(n)]
+
+    # 2. Populate base case - single char
+    for i in range(n):
+        dp[i][i] = True
+
+    # 3. Iterate length from 2 to n
+    for length in range(2, n + 1):
+
+        # 4. Iterate start index (end at n)
+        for i in range(n - length + 1):
+            j = i + length - 1 # end index
+
+            # 5. Check if outer char match
+            if s[i] == s[j]:
+
+                # 5.1. if len 2, then naturally is palindrome
+                if length == 2:
+                    dp[i][j] = True
+
+                # 5.2. else, check inner string is valid palindrome
+                else:
+                    dp[i][j] = dp[i+1][j-1]
+
+            # 6. If Valid palindrome, update start_idx & longest length
+            if dp[i][j]:
+                max_len_so_far = max(max_len_so_far, length)
+                start_idx_of_palindrome = i
+
+    return s[start_idx_of_palindrome: start_idx_of_palindrome+max_len_so_far]
+```
+
+### 2. Palindromic Substrings
+
+**Problem:**
+Given a string `s`, return the number of substrings within `s` that are palindromes.
+
+A palindrome is a string that reads the same forward and backward.
+**Example:**
+
+```
+Input: s = "abc"
+Output: 3
+Explanation: "a", "b", "c".
+```
+
+**Strategy:**
+
+```
+- Same concept as Palindromic substring
+- main difference is to count num palindromes
+- instead of start_idx & len_of_longest
+
+1. init dp table [[False] * n for _ in range(n)]
+2. Init num_palindrome = 0
+3. Base case dp[i][i] = True + num_palindrome++
+4. Iterate length from 2 to n
+    - Iterate i to (n - length + 1)
+5. if palindrome, increment count
+```
+
+**Code:**
+
+```
+def countSubstrings(self, s: str) -> int:
+    n = len(s)
+    if n == 1:
+        return 1
+
+    num_palindromes = 0
+    dp = [[False] * n for _ in range(n)]
+
+    for i in range(n):
+        dp[i][i] = True
+        num_palindromes += 1
+
+    for length in range(2, n+1):
+        for i in range(n - length + 1):
+            j = i + length - 1
+
+            if s[i] == s[j]:
+                # if len 2, must be palindrome
+                if length == 2:
+                    dp[i][j] = True
+                else:
+                    dp[i][j] = dp[i+1][j-1]
+
+            if dp[i][j]:
+                num_palindromes += 1
+    return num_palindromes
+```
+
 ---
 
 ## F. State Machine DP
