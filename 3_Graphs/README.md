@@ -215,19 +215,12 @@ Output: 1
 **Strategy:**
 
 ```
-- define a sink_island(sr, sc) that performs bfs
-    - init directions arr (outside fn)
-    - cur_island = deque([(sr, sc)])
-    - while cur_island, popleft()
-        - boundary + land check
-        - if valid
-            - set value to 0 (sink)
-            - add (nr, nc) to queue
-- declare satellite loop
-    - if land cell:
-        - increment count
-        - execute sink_island(r, c)
-- return count
+1. Grid Scan: Iterate through every cell (satellite)
+2. Trigger: (when find '1')
+    - execute sink_island(r, c) with BFS within
+    - sink cell (1 to 0) to never visit again
+    - using deque & directions
+    - boundary & land cell check
 ```
 
 **Code:**
