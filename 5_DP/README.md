@@ -285,7 +285,148 @@ def rob(self, nums: List[int]) -> int:
 
 ```
 
----
+### 5. Decode Ways
+
+**Problem:**
+A string consisting of uppercase english characters can be encoded to a number using the following mapping:
+
+```
+'A' -> "1"
+'B' -> "2"
+...
+'Z' -> "26"
+```
+
+To decode a message, digits must be grouped and then mapped back into letters using the reverse of the mapping above. There may be multiple ways to decode a message. For example, "1012" can be mapped into:
+
+```
+"JAB" with the grouping (10 1 2)
+"JL" with the grouping (10 12)
+```
+
+The grouping `(1 01 2)` is invalid because `01` cannot be mapped into a letter since it contains a leading zero.
+
+Given a string s containing only digits, return the number of ways to decode it. You can assume that the answer fits in a 32-bit integer.
+
+**Example:**
+
+```
+Input: s = "12"
+Output: 2
+Explanation: "12" could be decoded as "AB" (1 2) or "L" (12).
+```
+
+**Strategy:**
+
+```
+1. init dp = [0] * (n + 1) to track all states up to idx i (accum so far)
+2. Find Recurrence relation:
+    - At idx i, only 2 actions possible:
+        1. Single Digit Valid -> is s[i - 1] valid '1-9'?
+            - yes -> += dp[i-1] (number of ways valid accum for all single digits)
+            - no -> add nothing
+        2. Double digit valid -> is s[i-2:i] valid '10-26'?
+            - yes -> += dp[i-2] (number of ways valid accum for all double digits)
+            - no -> add nothing
+3. Populate base cases
+    - dp[0] = 1 (Empty string = 1 way -> to prep for 2 digit)
+        - for intuition, picture i=2 for '12' (valid). if dp[i-2] where i=2 is 0, no summing occurs
+    - dp[1] = 1 if s[0] != '0' else 0
+4. Iterate range(2, n+1)
+    - Perform Single Digit Check -> += dp[i-1] (valid single digit accum so far)
+    - Perform Double Digit check -> += dp[i-2] (valid double digit accum so far)
+```
+
+**Code:**
+
+```
+    def numDecodings(self, s: str) -> int:
+        n = len(s)
+        dp = [0] * (n + 1)
+
+        # Base cases:
+        dp[0] = 1
+        dp[1] = 1 if s[0] != '0' else 0
+
+        for i in range(2, n+1):
+
+            # Valid Single Digit check
+            if s[i-1] != '0':
+                dp[i] += dp[i-1]
+
+            # Valid Double Digit check
+            double_digit = int(s[i-2:i])
+            if double_digit >= 10 and double_digit <= 26:
+                dp[i] += dp[i-2]
+
+        return dp[n]
+```
+
+### 6. Coin Change
+
+**Problem:**
+You are given an integer array `coins` representing coins of different denominations (e.g. 1 dollar, 5 dollars, etc) and an integer `amount` representing a target amount of money.
+
+Return the fewest number of coins that you need to make up the exact target amount. If it is impossible to make up the amount, return `-1`.
+
+You may assume that you have an **unlimited number of each coin**.
+
+**Example:**
+
+```
+Input: coins = [1,5,10], amount = 12
+Output: 3
+Explanation: 12 = 10 + 1 + 1. Note that we do not have to use every kind coin available.
+```
+
+**Strategy:**
+
+```
+1. init amounts bucket representing number of coins needed for that amount
+    - amounts = [amount + 1] * (amount + 1)
+    - e.g. amount = 5 -> [6, 6, 6, 6, 6, 6]
+    - each idx means -> idx 0 = $0, idx 1 = $1
+2. Base case -> amounts[0] = 0 (0 coins for 0$)
+3. Iterate each amount in amounts
+    - Iterate each coin in coins (e.g. {1, 2, 5} in coins)
+    - amounts[i] = min(amounts[i], amounts[i-c] + 1)
+        - amounts[i] <- accumulated coins from previous coin iteration
+        - amounts[i-c] + 1 <- new denomination minimum (eg amt 5$ - coin 5$)
+- why amounts[i-c]?
+    - At i = $5 for c=$1, (i-c) = $4
+    - amounts[$4] means min number of coins accumulated at $4
+    - amounts[$4] + 1 ($1 coin)
+    ---
+    - At i = $5 for c=$5, (i-c) = $0
+    - amount[$0] means min number at $0 which is 0
+    - min(amounts[$5], amounts[$0] + 1) = min(5, 1) = 1
+4. When returning, remember to check if > amount (means not possible)
+    - return -1
+else return amounts[amount]
+```
+
+**Code:**
+
+```
+    def coinChange(self, coins: List[int], amount: int) -> int:
+        # bucket -> [13 13 13 ... 13]
+        # each idx represent amount to "fill"
+        amounts = [amount + 1] * (amount + 1)
+
+        # Base case - 0 coins to make up $0
+        amounts[0] = 0
+
+        for amt in range(1, len(amounts)):
+            # amt 1 means $1
+
+            for coin in coins:
+                if coin <= amt:
+                    amounts[amt] = min(amounts[amt], amounts[amt-coin] + 1)
+
+        if amounts[amount] > amount:
+            return -1
+        return amounts[amount]
+```
 
 ## B. Grid DP (2D)
 
