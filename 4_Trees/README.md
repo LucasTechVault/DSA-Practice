@@ -268,6 +268,58 @@ Output: [3,4,5,5,4,null,7]
         return traverse_and_merge(root1, root2)
 ```
 
+### A6. Path Sum
+
+**Problem:**
+You are given the `root` of a binary tree and an integer `targetSum`, return `true` if the tree has a root-to-leaf path such that adding up all the values along the path equals `targetSum`.
+
+**Example:**
+
+```
+Input: root = [1,2,3], targetSum = 3
+Output: true
+```
+
+**Strategy:**
+
+```
+- view targetSum as bill to pay, each node.val to "pay"
+- idea is to pass dfs(node, bill_remaining) in the recursive_fn
+- also must ensure that leaf node -> node.left & node.right is None
+1. Top down (process then traverse)
+    - base case 1 -> if not node -> return False (no more people to pay bill)
+    - base case 2 -> leaf node -> return bill_remaining == node.val
+        - does this leaf node has sufficient to pay exactly
+2. Process
+    - new_bill_after_paying = bill_remaining - node.val
+3. Traverse & process
+    - traverse_and_pay_bill(node.left, new_bill_after_paying) or
+    - traverse_and_pay_bill(node.right, new_bill_after_paying)
+```
+
+**Code:**
+
+```
+def hasPathSum(self, root: Optional[TreeNode], targetSum: int) -> bool:
+    def traverse_and_pay_bill(node, bill_remaining):
+        # base case 1 -> no more people to pay bill
+        if not node:
+            return False
+
+        # base case 2 -> at leaf node
+        if node.left is None and node.right is None:
+            return bill_remaining == node.val # enough money to pay off?
+
+        # traverse and pay bill
+        bill_after_paying_current = bill_remaining - node.val
+        return (
+            traverse_and_pay_bill(node.left, bill_after_paying_current) or
+            traverse_and_pay_bill(node.right, bill_after_paying_current)
+        )
+
+    return traverse_and_pay_bill(root, targetSum)
+```
+
 ## B. Bottom-up DFS (Post-order)
 
 **Intuition:** Manager waiting for reports. Cannot make decision until subordinate return results
