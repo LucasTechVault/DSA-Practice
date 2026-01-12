@@ -340,26 +340,26 @@ Explanation: "12" could be decoded as "AB" (1 2) or "L" (12).
 **Code:**
 
 ```
-    def numDecodings(self, s: str) -> int:
-        n = len(s)
-        dp = [0] * (n + 1)
+def numDecodings(self, s: str) -> int:
+    n = len(s)
+    dp = [0] * (n + 1)
 
-        # Base cases:
-        dp[0] = 1
-        dp[1] = 1 if s[0] != '0' else 0
+    # Base cases:
+    dp[0] = 1
+    dp[1] = 1 if s[0] != '0' else 0
 
-        for i in range(2, n+1):
+    for i in range(2, n+1):
 
-            # Valid Single Digit check
-            if s[i-1] != '0':
-                dp[i] += dp[i-1]
+        # Valid Single Digit check
+        if s[i-1] != '0':
+            dp[i] += dp[i-1]
 
-            # Valid Double Digit check
-            double_digit = int(s[i-2:i])
-            if double_digit >= 10 and double_digit <= 26:
-                dp[i] += dp[i-2]
+        # Valid Double Digit check
+        double_digit = int(s[i-2:i])
+        if double_digit >= 10 and double_digit <= 26:
+            dp[i] += dp[i-2]
 
-        return dp[n]
+    return dp[n]
 ```
 
 ### 6. Coin Change
@@ -408,24 +408,151 @@ else return amounts[amount]
 **Code:**
 
 ```
-    def coinChange(self, coins: List[int], amount: int) -> int:
-        # bucket -> [13 13 13 ... 13]
-        # each idx represent amount to "fill"
-        amounts = [amount + 1] * (amount + 1)
+def coinChange(self, coins: List[int], amount: int) -> int:
+    # bucket -> [13 13 13 ... 13]
+    # each idx represent amount to "fill"
+    amounts = [amount + 1] * (amount + 1)
 
-        # Base case - 0 coins to make up $0
-        amounts[0] = 0
+    # Base case - 0 coins to make up $0
+    amounts[0] = 0
 
-        for amt in range(1, len(amounts)):
-            # amt 1 means $1
+    for amt in range(1, len(amounts)):
+        # amt 1 means $1
 
-            for coin in coins:
-                if coin <= amt:
-                    amounts[amt] = min(amounts[amt], amounts[amt-coin] + 1)
+        for coin in coins:
+            if coin <= amt:
+                amounts[amt] = min(amounts[amt], amounts[amt-coin] + 1)
 
-        if amounts[amount] > amount:
-            return -1
-        return amounts[amount]
+    if amounts[amount] > amount:
+        return -1
+    return amounts[amount]
+```
+
+### 7. Maximum Product Subarray
+
+**Problem:**
+Given an integer array `nums`, find a subarray that has the largest product within the array and return it.
+A subarray is a contiguous non-empty sequence of elements within an array.
+You can assume the output will fit into a 32-bit integer.
+**Example:**
+
+```
+Input: nums = [1,2,-3,4]
+Output: 4
+```
+
+**Strategy:**
+
+```
+- The key focus is not on finding a subarray, but on finding the maximum
+- Something like Kadane's algorithm
+- In normal addition (like Kadane's), negatives are bad
+- In product, 2 negatives could becomes the hero
+- Soln -> Double Tracking
+    - cur_max -> largest product ending at cur_pos
+    - cur_min -> smallest (most negative) product ending at cur_pos
+
+1. Init Base Variables
+    - cur_min = cur_max = nums[0]
+    - result = nums[0] # tracks the final result
+2. Loop i from range(1, len(nums))
+    - max_product = nums[i] * cur_max
+    - min_product = nums[i] * cur_min
+
+3. Update values (3 possible values)
+    1) cur_number (like Kadane's, cur_num could also be contender)
+    2) max_product (can turn to min if +ve * -ve)
+    3) min_product (can turn to max if -ve * -ve)
+
+4. Update result max(cur_max, result)
+```
+
+**Code:**
+
+```
+def maxProduct(self, nums: List[int]) -> int:
+    cur_min = cur_max = nums[0]
+    max_tracker = nums[0]
+
+    for i in range(1, len(nums)):
+        cur_num = nums[i]
+        max_product = cur_num * cur_max
+        min_product = cur_num * cur_min
+
+        cur_max = max(cur_num, max_product, min_product)
+        cur_min = min(cur_num, max_product, min_product)
+
+        max_tracker = max(max_tracker, cur_max)
+
+    return max_tracker
+```
+
+### 8. Word Break
+
+**Problem:**
+Given a string `s` and a dictionary of strings `wordDict`, return `true` if `s` can be segmented into a space-separated sequence of dictionary words.
+
+You are allowed to reuse words in the dictionary an unlimited number of times. You may assume all dictionary words are unique.
+**Example:**
+
+```
+Input: s = "catsincars", wordDict = ["cats","cat","sin","in","car"]
+Output: false
+```
+
+**Strategy:**
+
+```
+1. Convert wordDict to set -> check word in set is O(1)
+2. init valid_checkpoints of size (n + 1) with False
+    - valid_checkpoints[i] represents prefix of length i in wordDict
+3. Base case -> dp[0] = True (valid start point)
+4. Recurrence case
+    1. Outer loop i in range(1, n+1) -> goal is n
+    2. Inner loop j in range(i)
+        - start from last checkpoint dp[j] = True
+            - will always start dp[0] since that is True
+        - from last checkpoint to i, is it valid string? s[j:i] in wordDict?
+        Logic: if dp[j] and dp[j:i] in wordDict
+            - dp[i] = True # set new checkpoint
+Trace:
+dp = [T, F, F, T, T, F, F] for s='catsin', {cat, cats}
+i = 5, j = 0 -> dp[0] True -> substring = 'catsin' -> False
+i = 5, j skips [1, 2] because F. j = 3 -> substring = 'sin' -> False
+i = 5, j = 4 -> substring = 'in' -> False
+dp[5] = False
+return dp[5]
+```
+
+**Code:**
+
+```
+def wordBreak(self, s: str, wordDict: List[str]) -> bool:
+    wordDict = set(wordDict)
+    n = len(s)
+
+    valid_checkpoints = [False] * (n + 1)
+
+    # Base case:
+    valid_checkpoints[0] = True # valid starting checkpoint
+
+    # Recursive exploration
+    for i in range(1, n+1):
+
+
+        for j in range(i):
+            # start from valid checkpoints
+            if valid_checkpoints[j]:
+
+                # anything up to j already checked
+                substring_to_check = s[j:i]
+
+                if substring_to_check in wordDict:
+                    valid_checkpoints[i] = True
+                    break # break out of j loop
+
+    return valid_checkpoints[n]
+
 ```
 
 ## B. Grid DP (2D)
