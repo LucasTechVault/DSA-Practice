@@ -92,6 +92,181 @@ def invertTree(root):
 ### A3. Same Binary Tree
 
 **Problem:**
+Given the roots of two binary trees `p` and `q`, return `true` if the trees are equivalent, otherwise return `false`.
+
+Two binary trees are considered equivalent if they share the exact same structure and the nodes have the same values.
+
+**Example:**
+
+```
+Input: p = [1,2,3], q = [1,2,3]
+Output: true
+```
+
+**Strategy:**
+
+```
+- traverse 2 trees top-down instead of 1
+    - top-down means process -> traverse
+
+- recursive fn must take 2 roots
+1. define traverse_and_check_same(tree1, tree2)
+2. 3 scenarios to process (check)
+    1. both node at null - valid
+    2. either node at null - invalid
+    3. node val mismatch - invalid
+3. traverse & check return (both.left) and (both.right)
+```
+
+**Code:**
+
+```
+def isSameTree(p, q):
+    def traverse_and_check(node1, node2):
+        # base case 1 -> both empty
+        if not node1 and not node2:
+            return True
+
+        # base case 2 -> either 1 empty first
+        if not node1 or not node2:
+            return False
+
+        # base case 3 -> val mismatch
+        if node1.val != node2.val:
+            return False
+
+        # Traverse & check
+        return (
+            traverse_and_check(node1.left, node2.left)
+            and
+            traverse_and_check(node1.right, node2.right)
+        )
+    return traverse_and_check(p, q)
+```
+
+### A4. Subtree of Another Tree
+
+**Problem:**
+Given the roots of two binary trees `root` and `subRoot`, return `true` if there is a subtree of `root` with the same structure and node values of `subRoot` and `false` otherwise.
+
+A subtree of a binary tree tree is a tree that consists of a node in tree and all of this node's descendants. The tree tree could also be considered as a subtree of itself.
+
+**Example:**
+
+```
+Input: root = [1,2,3,4,5], subRoot = [2,4,5]
+Output: true
+```
+
+**Strategy:**
+
+```
+1. Top-down (process -> traverse)
+2. Process phase -> 2 checks
+    1. if subRoot is None -> valid (empty subTree is part of Tree)
+    2. if root is None -> invalid (empty tree cannot be duplicated)
+3. def isSameTree(p, q) recursive helper
+4. process & traverse at same time
+```
+
+**Code:**
+
+```
+def isSubtree(self, root: Optional[TreeNode], subRoot: Optional[TreeNode]) -> bool:
+    # edge case 1 -> empty subRoot is part of Tree
+    if subRoot is None:
+        return True
+
+    # edge case 2 -> empty Root cannot be contained
+    if root is None:
+        return False
+
+    # Helper to process
+    def isSameTree(p, q):
+        if not p and not q:
+            return True
+
+        if not p or not q:
+            return False
+
+        if p.val != q.val:
+            return False
+
+        return(
+            isSameTree(p.left, q.left) and
+            isSameTree(p.right, q.right)
+        )
+
+    # traverse & process
+    # isSameTree initial check + recursive traverse & process
+    return (
+        isSameTree(root, subRoot) or
+        self.isSubtree(root.left, subRoot) or
+        self.isSubtree(root.right, subRoot)
+    )
+```
+
+### A5. Merge Two Binary Trees
+
+**Problem:**
+You are given two binary trees `root1` and `root2`.
+
+Imagine that when you put one of them to cover the other, some nodes of the two trees are overlapped while the others are not. You need to merge the two trees into a new binary tree. The merge rule is that if two nodes overlap, then sum node values up as the new value of the merged node. Otherwise, the NOT null node will be used as the node of the new tree.
+
+Return the merged tree.
+
+Note: The merging process must start from the root nodes of both trees.
+**Example:**
+
+```
+Input: root1 = [1,3,2,5], root2 = [2,1,3,null,4,null,7]
+Output: [3,4,5,5,4,null,7]
+```
+
+**Strategy:**
+
+```
+1. Top-down (process then traverse) -> define traverse_and_merge(node1, node2)
+2. Need a reference tree to save value, use tree1
+3. Processing case
+    1. node1 exist, node2 doesnt -> return node1 (doesnt matter, using node1)
+    2. node2 exist, node1 doesnt -> return node2 (use node2 as node1)
+    3. both nodes exist -> node1.val += node2.val
+    * we need to return, cannot modify in-place due to recursive stack
+        - if use node1 = TreeNode(node2.val) -> no effect (at stack level)
+4. traverse & process, merge into tree1
+    - node1.left = traverse_and_merge(node1.left, node2.left)
+    - node1.right = traverse_and_merge(node1.right, node2.right)
+```
+
+**Code:**
+
+```
+    def mergeTrees(self, root1: Optional[TreeNode], root2: Optional[TreeNode]) -> Optional[TreeNode]:
+        def traverse_and_merge(node1, node2):
+            # base case 1 - node1 empty
+            if node1 is None:
+                return node2 # use node2
+
+            # base case 2 - node2 empty
+            if node2 is None:
+                return node1 # just use node1
+
+            # base case 3 - both nodes exist
+            node1.val += node2.val
+
+            # Traverse & merge into node1.left
+            node1.left = traverse_and_merge(node1.left, node2.left)
+
+            # Traverse & merge into node1.right
+            node1.right = traverse_and_merge(node1.right, node2.right)
+
+            # return merged node
+            return node1
+
+        # traverse & merge
+        return traverse_and_merge(root1, root2)
+```
 
 ## B. Bottom-up DFS (Post-order)
 
@@ -110,7 +285,7 @@ def invertTree(root):
 **Strategy:**
 
 ```
-1. init result arr to track results
+1. init result arr to track resultfs
 2. identify post-order: left -> right -> process
 3. define recursive traverse(node)
     - base case -> return None
