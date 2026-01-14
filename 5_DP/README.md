@@ -548,11 +548,175 @@ def wordBreak(self, s: str, wordDict: List[str]) -> bool:
                 substring_to_check = s[j:i]
 
                 if substring_to_check in wordDict:
-                    valid_checkpoints[i] = True
+                    valid_checkpoints[i] = True # update new checkpoint
                     break # break out of j loop
 
     return valid_checkpoints[n]
 
+```
+
+### 9. Longest Increasing Subsequence
+
+**Problem:**
+Given an integer array `nums`, return the length of the longest strictly increasing subsequence.
+
+A subsequence is a sequence that can be derived from the given sequence by deleting some or no elements without changing the relative order of the remaining characters.
+
+For example, "cat" is a subsequence of "crabt".
+
+**Example:**
+
+```
+Input: nums = [9,1,4,2,3,3,7]
+Output: 4
+```
+
+**Strategy:**
+
+```
+- imagine nums are heights of islands (left to right)
+    - can only jump from left to right
+    - can only jump from lower islands to higher islands
+    - goal: max number of jumps before stopping
+
+1. init dp = [1] * len(nums)
+    - tracks the max record for each island
+    - at dp[i], it records the max hops before ending
+2. iterate i in range(n) <- exploring all islands possible
+    - cur_island = nums[i]
+3. iterate from j in range(i) <- check all valid island before
+    - prev_island = nums[j]
+    - condition to check: if cur_island > prev_island # can hope
+        - dp[i] = max(dp[i], dp[j] + 1)
+            - dp[i] - maximum recorded step
+            - dp[j] + 1 - whereever we came from + 1
+4. return max(dp) - return the max step recorded
+```
+
+**Code:**
+
+```
+def lengthOfLIS(self, nums: List[int]) -> int:
+    n = len(nums)
+    dp = [1] * n
+
+    # loop every element in nums
+    for i in range(n):
+
+        cur_num = nums[i]
+
+        # loop every element before i to check if increasing
+        for j in range(i):
+            prev_num = nums[j]
+
+            # valid hop (lower -> higher island)
+            if prev_num < cur_num:
+
+                # update checkpoint
+                dp[i] = max(dp[i], dp[j] + 1)
+                # dp[i] tracks current number of hops
+                # dp[j] + 1 (hop from that island to next island)
+
+    return max(dp)
+```
+
+### 10. Partition Equal Subset Sum
+
+**Problem:**
+You are given an array of positive integers `nums`.
+
+Return true if you can partition the array into two subsets, subset1 and subset2 where sum(subset1) == sum(subset2). Otherwise, return false.
+
+**Example:**
+
+```
+Input: nums = [1,2,3,4]
+Output: true
+- {1, 4} and {2, 3}
+```
+
+**Strategy:**
+
+```
+1. Get sum(nums) and check if divisible by 2
+2. if possible, set target = total // 2
+3. init dp table = [False] * (target + 1)
+    - each idx (1 -> target) represent if possible to land on target
+    - if possible to land on target, the remaining half will be possible too
+4. To populate dp table:
+    4.1 iterate num in nums (our bullets)
+    4.2 iterate downwards from target to num
+        - if dp[i-num] is True, means possible to +num and arrive at i
+        - set dp[i] = True (since we are iterating downwards for each num)
+        - if dp[target] is True, return True (optimize check)
+5. return dp[target]
+```
+
+**Code:**
+
+```
+def canPartition(self, nums: List[int]) -> bool:
+    total = sum(nums)
+    # total not divisible by 2, cannot be split
+    if total % 2 != 0:
+        return False
+
+    # else, total is divisible by 2
+    target = total // 2
+
+    # Each idx 1 -> target represents if possible to reach this number
+    dp = [False] * (target + 1)
+    dp[0] = True # base case, where num 0 requires no value to sum
+
+    # Iterate each value in nums
+    for num in nums:
+
+        # Iterate down from target to num
+        for i in range(target, num-1, -1):
+
+            # if we take `num` step back and its true, we can take `num` step fwd and be true
+            if dp[i - num] == True:
+                dp[i] = True
+
+            if dp[target]:
+                return True
+
+    return dp[target]
+```
+
+### 11. Triangle
+
+**Problem:**
+You are given a `triangle` array, return the minimum path sum from top to bottom.
+
+For each step, you may move to an adjacent number of the row below. More formally, if you are on index `i` on the current row, you may move to either index `i` or index `i + 1` on the next row.
+
+**Example:**
+
+```
+Input: triangle = [
+    [2],
+   [3,4],
+  [6,5,7],
+ [4,1,8,3]
+]
+
+Output: 11
+```
+
+**Strategy:**
+
+```
+1. Idea is we have to process current row i and next row (i+1)
+2. Instead of top-down, we view it bottom-up
+3. We init a 2D dp table similar to triangle but all values 0
+4. Base case is dp[-1] = triangle[-1] -> last row has no next row, so is itself
+5. We iterate bottom up from 2nd last row
+    - dp[i][j] = triangle[i][j] + min(dp[i+1][j], dp[i+1][j+1])
+        - take the min of the left and right child
+6. At dp[0][0] -> it will be the min sum
+- Why it works? -> Triangle takes binary tree structure
+    - this is essentially min path sum
 ```
 
 ## B. Grid DP (2D)
@@ -739,6 +903,66 @@ def countSubstrings(self, s: str) -> int:
 
 ## F. State Machine DP
 
+### F1. Paint House
+
+**Problem:**
+There is a row of `n` houses, where each house can be painted one of three colors: red, blue, or green. The cost of painting each house with a certain color is different. You have to paint all the houses such that no two adjacent houses have the same color.
+
+The cost of painting each house with a certain color is represented by an n x 3 cost matrix `costs`.
+
+For example, `costs[0][0]` is the cost of painting house 0 with the color red; `costs[1][2]` is the cost of painting house 1 with color green, and so on...
+
+Return the minimum cost to paint all houses.
+
+**Example:**
+
+```
+Input: costs = [[17,2,17],[16,16,5],[14,3,19]]
+Output: 10
 ```
 
+**Strategy:**
+
+```
+- n = len(costs) - number of houses to paint
+1. Init red_dp, blue_dp, green_dp = [0] * n
+    - n and not (n+1) because dependent only on houses before (i-1)
+2. Each element in dp is the accumulated cost if we took that path
+3. Base case -> red_dp[0] = costs[0][0] | blue_dp[0] = costs[0][1] ...
+4. Iterate from i = 1 to n:
+    - red_dp[i] = cost[i][0] + min(blue_dp[i-1], green_dp[i-1])
+        - cost[i][0] - cost of red at this cur step
+        - min(blue_dp[i-1], green_dp[i-1]): prev can only be blue or green (accum)
+5. return min(red_dp[-1], blue_dp[-1], green_dp[-1])
+    - the ending is the accumulated cost at step n
+```
+
+**Code:**
+
+```
+def minCost(self, costs: List[List[int]]) -> int:
+    n = len(costs)
+    if n == 0:
+        return 0
+
+    red_dp = [0] * n
+    blue_dp = [0] * n
+    green_dp = [0] * n
+
+    # Base cases:
+    red_dp[0] = costs[0][0]
+    blue_dp[0] = costs[0][1]
+    green_dp[0] = costs[0][2]
+
+    # Iterative case:
+    # each element in dp is the accumulated cost
+    for i in range(1, n):
+        red_dp[i] = costs[i][0] + min(blue_dp[i-1], green_dp[i-1])
+        blue_dp[i] = costs[i][1] + min(red_dp[i-1], green_dp[i-1])
+        green_dp[i] = costs[i][2] + min(red_dp[i-1], blue_dp[i-1])
+
+    # After iteration, dp[-1] contains the final accumulated cost
+    return min(
+        red_dp[-1], blue_dp[-1], green_dp[-1]
+    )
 ```
