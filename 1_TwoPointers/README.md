@@ -71,6 +71,44 @@ Output: true
             - digitBuilder += char 
             - navigator += 1
 ```
+
+### A3. Squares of Sorted Array
+**Problem:**
+You are given an integer array nums sorted in non-decreasing order, return an array of the squares of each number sorted in non-decreasing order.
+
+**Example:**
+```
+Input: nums = [-4,-1,0,3,10]
+Output: [0,1,9,16,100]
+```
+**Strategy:**
+```
+1. init results -> [0] * n
+2. init l, r = 0, n-1
+3. down-iterate (n-1, -1, -1)
+    -> perform abs(l) > abs(r)
+        - val = nums[l] & l += 1
+        - else val = nums[r] & r-= 1
+4. result[i] = val * val
+```
+**Code:**
+```
+def sortedSquares(self, nums: List[int]) -> List[int]:
+    n = len(nums)
+    result = [0] * n
+    l, r = 0, n-1
+    for i in range(n-1, -1, -1):
+        if abs(nums[l]) > abs[num[r]]:
+            val = nums[l]
+            l += 1
+        else:
+            val = nums[r]
+            r -= 1
+
+        result[i] = val * val
+    return result
+```
+
 ## B. Hare & Tortoise (Fast Slow)
 
 **Scenario:** Typically in LinkedList or Circular arrays
@@ -175,6 +213,46 @@ def merge(self, nums1: List[int], m: int, nums2: List[int], n: int) -> None:
         p3 -= 1
 ```
 
+### C3. Find Content Children:
+**Problem:**
+Assume you are an awesome parent and want to give your children some cookies. But, you should give each child at most one cookie.
+
+Each child i has a greed factor g[i], which is the minimum size of a cookie that the child will be content with; and each cookie j has a size s[j]. If s[j] >= g[i], we can assign the cookie j to the child i, and the child i will be content. Your goal is to maximize the number of your content children and output the maximum number.
+
+**Example:**
+```
+Input: g = [1,2], s = [1,2,3]
+Output: 2
+```
+**Strategy"**
+```
+1. g.sort() & s.sort()
+2. init buyer_idx, seller_idx = 0, 0
+    - seller_idx -> g (value to meet to sell)
+    - buyer_idx -> s (value avail to spend)
+3. while buyer_idx < len(s) and seller_idx < (len(g))
+4. check if s[buyer_idx] >= g[seller_idx]
+    - seller_idx += 1 (if bought, increment this to next)
+5. buyer_idx += 1
+    - if no purchase -> move next
+    - if purchase -> still move next
+```
+**Code:**
+```
+    def findContentChildren(self, g: List[int], s: List[int]) -> int:
+        g.sort()
+        s.sort()
+
+        buyer_idx, seller_idx = 0, 0
+        while buyer_idx < len(s) and seller_idx < len(g):
+            if s[buyer_idx] >= g[seller_idx]:
+                seller_idx += 1
+        
+        # else, buyer cannot afford (or already bought)
+            buyer_idx += 1
+
+        return seller_idx
+```
 
 ## D. Caterpillar (Sliding Window)
 
@@ -219,3 +297,48 @@ def moveZeroes(self, nums: List[int]) -> None:
             anchor += 1
         explorer += 1
 ```
+
+### E2. Remove Duplicates From Sorted Array
+**Problem:**
+You are given an integer array nums sorted in non-decreasing order. Your task is to remove duplicates from nums in-place so that each element appears only once.
+
+After removing the duplicates, return the number of unique elements, denoted as k, such that the first k elements of nums contain the unique elements.
+
+Note:
+
+The order of the unique elements should remain the same as in the original array.
+It is not necessary to consider elements beyond the first k positions of the array.
+To be accepted, the first k elements of nums must contain all the unique elements.
+Return k as the final result.
+**Example:**
+```
+Input: nums = [1,1,2,3,4]
+Output: [1,2,3,4]
+```
+**Strategy:**
+```
+1. perform len 1 check -> return 1
+2. set anchor = explorer = 1
+3. iterate explorer < len(nums)
+    - check explorer[i] != explorer[i-1]
+        - nums[anchor] = nums[explorer]
+        - anchor += 1
+    - explorer += 1
+4. return anchor
+```
+**Code:**
+```
+def removeDuplicates(self, nums: List[int]) -> int:
+    if not nums:
+        return 0
+    
+    explorer = anchor = 1
+    while explorer < len(nums):
+        if nums[explorer] != nums[explorer-1]:
+            nums[anchor] = nums[explorer]
+            anchor += 1
+        explorer += 1
+    
+    return anchor
+```
+
