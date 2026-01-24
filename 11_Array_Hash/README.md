@@ -88,6 +88,8 @@ Output: [2,3,4]
 ```
 **Strategy:**
 ```
+- bouncer at the club, inspecting each element
+- only allow write if nums[i] != val
 1. init anchor = 0 -> write to array if valid
     - valid means nums[i] != val
 2. iterate every element
@@ -118,4 +120,18 @@ The majority element is the element that appears more than ⌊n / 2⌋ times in 
 ```
 Input: nums = [5,5,1,1,1,5,5]
 Output: 5
+```
+**Strategy:**
+```
+- Boyer-Moore voting algorithm
+    - if 2 different people meet, they knock each other out
+    - eventually, majority will be the remaining
+1. init count = 0, candidate = None
+2. iterate each num in nums
+    - if count == 0 -> candidate = num
+    - if num == candidate -> count += 1 else count -= 1
+3. return candidate
+```
+**Code:**
+```
 ```
