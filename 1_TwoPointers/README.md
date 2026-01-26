@@ -109,6 +109,41 @@ def sortedSquares(self, nums: List[int]) -> List[int]:
     return result
 ```
 
+### A4. Sort Array by Parity
+**Problem:**
+You are given an integer array nums, move all the even integers at the beginning of the array followed by all the odd integers.
+
+Return any array that satisfies this condition.
+**Example:**
+```
+Input: nums = [3,1,2,4]
+Output: [2,4,3,1]
+```
+**Strategy:**
+```
+1. init l, r = 0, n-1
+2. while l < r
+    - if l % 2 == 0 -> l += 1
+    - elif r % 2 != 0 -> r -= 1
+    - else l, r = r, l -> l ++, r--
+3. return nums
+```
+**Code:**
+```
+def sortArrayByParity(self, nums: List[int]) -> List[int]:
+    l, r = 0, len(nums) - 1
+    while l < r:
+        if nums[l] % 2 == 0:
+            l += 1
+        elif nums[r] % 2 != 0:
+            r -= 1
+        else:
+            nums[l], nums[r] = nums[r], nums[l]
+            l += 1
+            r -= 1
+    return nums
+```
+
 ## B. Hare & Tortoise (Fast Slow)
 
 **Scenario:** Typically in LinkedList or Circular arrays
@@ -341,4 +376,6 @@ def removeDuplicates(self, nums: List[int]) -> int:
     
     return anchor
 ```
+
+
 
