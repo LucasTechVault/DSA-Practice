@@ -24,3 +24,19 @@ def findContentChildren(g, s):
     buyer_idx += 1 # buyer processed decrkejt
     
 """
+from typing import *
+
+def calPoints(self, operations: List[str]) -> int:
+    s = []
+    for ops in operations:
+        if ops == '+':
+            s.append(s[-1] + s[-2])
+        elif ops == 'D':
+            s.append(s[-1] * 2)
+        elif ops == 'C':
+            s.pop() 
+        else:
+            s.append(int(ops))   
+    
+    return sum(s)
+    
